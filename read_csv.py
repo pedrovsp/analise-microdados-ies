@@ -1,11 +1,30 @@
 import pandas as pd
 from sqlalchemy import create_engine 
 import config
+import tb_aluno_column_names
 
-encodingVar = "cp1252"
+# TODO Read from input
+
+# CURSO
+# filePath = '../microdados_censo_superior_2016/DADOS/DM_CURSO.CSV'
+# validColumns = [ 0, 2, 4, 6, 10, 11, 13, 14, 15, 17, *range(19, 22), 25, 27 ]
+# tableName = "tb_curso"
+# indexLabel = "CO_CURSO"
+
+# IES
+# filePath = '../microdados_censo_superior_2016/DADOS/DM_IES.CSV'
+# validColumns = [ 0, 1, 2, 5, 6, *range(9, 13) ]
+# tableName = "tb_ies"
+# indexLabel = "CO_ALUNO_CURSO"
+
+# ALUNO
 filePath = '../microdados_censo_superior_2016/DADOS/DM_ALUNO.CSV'
 validColumns = [ 0, 2, 6, 9, 11, 13, 25, 28, 30, 35, 39, 55, *range(57, 75), 105, 107 ]
-batchSize = 100000
+tableName = "tb_aluno"
+indexLabel = "CO_ALUNO_CURSO"
+
+encodingVar = "cp1252"
+batchSize = 1000000
 
 engine = None
 df = None
@@ -20,7 +39,7 @@ def ReadRows(i):
 
 def CreateTable(engine):
     df = pd.read_csv(filePath, sep='|', header = 0, encoding=encodingVar, nrows=0, usecols=validColumns)
-    df.to_sql(name='aluno', con=engine, if_exists='replace', index=False, index_label="CO_ALUNO_CURSO")
+    df.to_sql(name=tableName, con=engine, if_exists='replace', index=False, index_label=indexLabel)
     return df.columns
 
 def CreateConnection():
@@ -32,5 +51,5 @@ columnNames = CreateTable(engine)
 
 for i in range(1):
     df = ReadRows(i)
-    df.to_sql(name='aluno', con=engine, if_exists='append', index=False, index_label="CO_ALUNO_CURSO")
+    df.to_sql(name=tableName, con=engine, if_exists='append', index=False, index_label=indexLabel)
     print("inserted ", i + 1 * batchSize)
