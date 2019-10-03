@@ -19,7 +19,7 @@ import tb_aluno_column_names
 
 # ALUNO
 filePath = '../microdados_censo_superior_2016/DADOS/DM_ALUNO.CSV'
-validColumns = [ 0, 2, 6, 9, 11, 13, 25, 28, 30, 35, 39, 55, *range(57, 75), 105, 107 ]
+validColumns = [ 0, 2, 6, 9, 11, 13, 23, 25, 28, 30, 35, 39, 55, *range(57, 75), 105, 107 ]
 tableName = "tb_aluno"
 indexLabel = "CO_ALUNO_CURSO"
 
@@ -30,12 +30,13 @@ engine = None
 df = None
 columnNames = []
 
-def ReadRows(i):
+def ReadRows(i, columns):
     skip = i * batchSize + 1
 
-    dataFrame = pd.read_csv(filePath, sep='|', header = None, encoding=encodingVar, skiprows=skip, nrows=batchSize, usecols=validColumns, names=columnNames)
-
-    return dataFrame
+    dataFrame = pd.read_csv(filePath, sep='|', header = None, encoding=encodingVar, skiprows=skip, nrows=batchSize, usecols=validColumns, names=columns)
+    # dfFiltered = dataFrame[(dataFrame.CO_OCDE_AREA_GERAL == 4) & (dataFrame.CO_OCDE_AREA_ESPECIFICA > 80) & (dataFrame.CO_OCDE_AREA_ESPECIFICA < 83) & (dataFrame.CO_MODALIDADE_ENSINO == 1)]
+    dfFiltered = dataFrame[(dataFrame.CO_OCDE_AREA_DETALHADA > 480) & (dataFrame.CO_OCDE_AREA_DETALHADA < 484) & (dataFrame.CO_MODALIDADE_ENSINO == 1)]
+    return dfFiltered
 
 def CreateTable(engine):
     df = pd.read_csv(filePath, sep='|', header = 0, encoding=encodingVar, nrows=0, usecols=validColumns)
@@ -47,9 +48,10 @@ def CreateConnection():
     return engine
 
 engine = CreateConnection()
+# Enable to create table
 columnNames = CreateTable(engine)
 
-for i in range(1):
-    df = ReadRows(i)
+for i in range(0,14):
+    df = ReadRows(i, tb_aluno_column_names.columnNames)
     df.to_sql(name=tableName, con=engine, if_exists='append', index=False, index_label=indexLabel)
-    print("inserted ", i + 1 * batchSize)
+    print("inserted ", (i + 1) * batchSize)
