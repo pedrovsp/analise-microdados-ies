@@ -22,6 +22,14 @@ filePath = '../microdados_censo_superior_2016/DADOS/DM_ALUNO.CSV'
 validColumns = [ 0, 2, 6, 9, 11, 13, 23, 25, 28, 30, 35, 39, 55, *range(57, 75), 105, 107 ]
 tableName = "tb_aluno"
 indexLabel = "CO_ALUNO_CURSO"
+columnsToDrop = [ 'IN_ING_VESTIBULAR',
+       'IN_ING_ENEM', 'IN_ING_AVALIACAO_SERIADA',
+       'IN_ING_SELECAO_SIMPLIFICADA', 'IN_ING_SELECAO_VAGA_REMANESC',
+       'IN_ING_SELECAO_VAGA_PROG_ESPEC', 'IN_ING_TRANSF_EXOFFICIO',
+       'IN_ING_DECISAO_JUDICIAL', 'IN_ING_CONVENIO_PECG',
+       'IN_RESERVA_ETNICO', 'IN_RESERVA_DEFICIENCIA',
+       'IN_RESERVA_ENSINO_PUBLICO', 'IN_RESERVA_RENDA_FAMILIAR',
+       'IN_RESERVA_OUTRA' ]
 
 encodingVar = "cp1252"
 batchSize = 1000000
@@ -40,12 +48,14 @@ def ReadRows(i, columns):
     for index, row in dfFiltered.iterrows():
         dfFiltered.CO_INGRESSO[index] = ParseCOIngresso(row)
         dfFiltered.CO_RESERVA[index] = ParseCOReserva(row)
+    dfFiltered = dfFiltered.drop(columns=columnsToDrop)
     return dfFiltered
 
 def CreateTable(engine):
     df = pd.read_csv(filePath, sep='|', header = 0, encoding=encodingVar, nrows=0, usecols=validColumns)
     df['CO_INGRESSO'] = ''
     df['CO_RESERVA'] = ''
+    df = df.drop(columns=columnsToDrop)
     df.to_sql(name=tableName, con=engine, if_exists='replace', index=False, index_label=indexLabel)
     return df.columns
 
@@ -84,3 +94,6 @@ for i in range(0,12):
     df = ReadRows(i, tb_aluno_column_names.columnNames)
     df.to_sql(name=tableName, con=engine, if_exists='append', index=False, index_label=indexLabel)
     print("inserted ", (i + 1) * batchSize)
+
+df = pd.read_sql_table(tableName, engine)
+df.to_csv(path_or_buf = 'tb_aluno.csv', sep = "|", encoding = encodingVar)
