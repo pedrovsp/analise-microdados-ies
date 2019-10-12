@@ -95,5 +95,6 @@ for i in range(0,12):
     df.to_sql(name=tableName, con=engine, if_exists='append', index=False, index_label=indexLabel)
     print("inserted ", (i + 1) * batchSize)
 
-df = pd.read_sql_table(tableName, engine)
-df.to_csv(path_or_buf = 'tb_aluno.csv', sep = "|", encoding = encodingVar)
+# Generate CSV
+# df = pd.read_sql_table(tableName, engine)
+# df.to_csv(path_or_buf = 'tb_aluno.csv', sep = ",", encoding = encodingVar)

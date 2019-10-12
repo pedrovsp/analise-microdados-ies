@@ -3,3 +3,6 @@ config.py
 
 __pycache__
 .vscode
+
+tb_aluno.csv
+tb_aluno_pred.csv
